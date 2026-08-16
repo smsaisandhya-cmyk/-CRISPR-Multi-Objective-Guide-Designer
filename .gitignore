@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+*.pyc
+
+data/
+results/
+
+*.xlsx
+*.pt
+*.pkl
+*.npz
+*.fa
+*.fa.gz
+*.exe
+
+*.pdf
