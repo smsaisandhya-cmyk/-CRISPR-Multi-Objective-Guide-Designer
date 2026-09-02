@@ -4,9 +4,10 @@ Backend: existing V1 application (unchanged algorithms).
   - Activity : CNN trained on DeepHF 55,604 real guides (V1 test Spearman 0.745;
                RF 0.728 on the same random split). Model: results/cnn_baseline.pt
   - Structure: real ViennaRNA MFE
-  - Specificity: V1 sequence-based CFD-INSPIRED scan vs human chr22 (hg38),
-                 both strands, NGG PAM — chr22 only, NOT genome-wide, NOT published
-                 CFD, NOT GUIDE-seq. (V2B not integrated.)
+    - Specificity: V2B-validated scan vs human chr22 (hg38): published
+                                  Doench 2016 CFD + true CCN, both strands, NGG PAM —
+                                  chr22 only, NOT genome-wide, NOT GUIDE-seq. (V2B logic
+                 integrated; genome-wide seed-index build ongoing.)
   - Ranking  : Pareto-optimal set over [efficiency, specificity, structure].
 No weighted composite score.
 """
@@ -16,7 +17,7 @@ import pandas as pd
 import streamlit as st
 
 try:
-    from src.specificity import score_guide
+    from src.specificity_v2b import score_guide
     HAS_SPEC_MOD = True
 except Exception:
     HAS_SPEC_MOD = False
@@ -100,11 +101,11 @@ if cnn is None:
 
 st.success("✅ CNN loaded — DeepHF 55,604 real guides · V1 test Spearman **0.745** (RF 0.728 on the same random split)")
 
-# ---------- real specificity index (V1 chr22 backend — unchanged) ----------
+# ---------- real specificity index (V2B backend: published CFD + true CCN) ----------
 @st.cache_resource
 def load_spec_index():
     try:
-        from src.specificity import load_index
+        from src.specificity_v2b import load_index
         return load_index()
     except Exception:
         return None
@@ -112,10 +113,11 @@ def load_spec_index():
 
 spec_idx = load_spec_index()
 if spec_idx is not None:
-    st.success("✅ Specificity: sequence-based CFD-inspired scan vs human chr22 (hg38), both strands, NGG PAM")
+    st.success("✅ Specificity: V2B engine — published CFD (Doench 2016), true-CCN detection, chr22 (hg38), both strands")
 else:
-    st.warning("⚠️ Reference index not found — using the fallback sequence proxy for Specificity.\n"
-               "Run once: `py src\\specificity.py --build` (needs `data/reference/chr22.fa.gz`, see Method).")
+    st.error("⚠️ Reference index not found — using the fallback sequence proxy for Specificity.\n"
+             "Run once: `py src\\specificity_v2b.py --build` (needs `data/reference/chr22.fa.gz`, see Method).")
+    st.info("Run once: `py src\\specificity.py --build` (needs `data/reference/chr22.fa.gz`, see Method).")
 
 # ---------- objective helpers (unchanged V1) ----------
 OBJ = ["Efficiency_CNN", "Specificity", "Structure"]
@@ -376,10 +378,11 @@ with st.expander("📖 Method (honest summary)"):
 - Real **ViennaRNA**-based RNA secondary-structure prediction (MFE ≈ 0 = unfolded = good).
 
 **Specificity**
-
-- The deployed interface currently uses the **V1 sequence-based chr22 scan**.
+- The deployed interface now uses the **V2B-validated chr22 scan** (`src/specificity_v2b.py`).
+- **Published Doench 2016 CFD** (240-entry matrix + PAM table, embedded; self-checked at `--cfd-check`).
+- **True-CCN fix:** reverse-strand candidates dropped from 9,160,652 to 2,629,104 on chr22 (3.48× V1 overcount eliminated).
+- Hits deduplicated by genomic position; aggregate = 1/(1+Σ CFD).
 - It searches **both strands** for PAM-compatible sites and reports **1/2/3-mismatch off-target counts**.
-- Its weighting is **CFD-inspired** — it is **not** the published CFD matrix.
 - It is **chr22-only**, not genome-wide.
 - It is a **sequence-based estimate**, not GUIDE-seq or any experimental off-target assay.
 

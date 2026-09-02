@@ -6,13 +6,13 @@ The project is developed in stages:
 
 1. **V1 — Application:** predict guide activity from sequence, evaluate RNA structure, estimate specificity, and rank guides using Pareto optimization.
 2. **V2A — Evaluation improvement:** evaluate activity prediction using a leakage-free gene-level split, ensuring that test genes are completely unseen during training.
-3. **V2B — Research extension:** develop and validate a more rigorous genome-scale off-target specificity engine using exact seed-indexed search and published CFD scoring. V2B is validated separately and is **not yet integrated into the Streamlit application**.
+3. **V2B — Research extension:** develop and validate a more rigorous genome-scale off-target specificity engine using exact seed-indexed search and published CFD scoring. The validated core logic (published CFD, true-CCN detection) is **now integrated into the app's chr22 specificity scan**; the seed-indexed genome-wide build remains **ongoing**.
 
 Efficiency and specificity are deliberately kept as **separate components**: a guide can cut well and still be unusable if it has close off-targets, so the objectives are evaluated independently rather than being collapsed into a single arbitrary score.
 
-> **Status: V1/V2A application complete; V2B validated as a research extension.**
+> **Status: V1/V2A application complete; V2B core specificity logic integrated into the app (chr22); genome-wide build ongoing.**
 
-The current Streamlit application uses the V1 specificity backend. V2B development, validation, and benchmark reports are preserved under `V2B_RESEARCH/` as a research record.
+The Streamlit application now uses the V2B-validated specificity backend (`src/specificity_v2b.py`): published Doench 2016 CFD scoring and true-CCN detection, fixing V1's 3.48× reverse-strand overcount (9,160,652 → 2,629,104 sites on chr22, reproduced digit-exact). V2B development, validation, and benchmark reports are preserved under `V2B_RESEARCH/` as a research record.
 
 ---
 
@@ -43,7 +43,7 @@ Dataset: DeepHF, 54,956 guides across 20,168 genes, with gene labels joined from
 | vs brute force | **222× faster** on human chrM (3.89 → 0.0175 ms/guide) |
 | Scale validated | **10 M sites**, 300 MB index, linear build, flat bytes/site |
 | Scoring | Published Doench 2016 CFD matrix, bit-identical to the reference scorer |
-| Application status | **Validated research extension, not yet integrated** |
+| Application status | **Core logic integrated into the app chr22 scan; genome-wide seed-index build ongoing** |
 
 The 10 M-site and hg38-scale results are validation/projection results from the separate V2B development workspace. **hg38 itself was not executed.**
 
