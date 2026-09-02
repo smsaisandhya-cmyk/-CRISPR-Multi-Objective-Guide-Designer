@@ -2,7 +2,7 @@
 streamlit==1.61.1
 numpy==2.5.1
 -f https://download.pytorch.org/whl/cpu
-torch==2.13.0+cpu
+torch==2.13.0
 ViennaRNA==2.7.2
 
 # ---- training/research deps (unpinned, not used by app.py at runtime) ----
